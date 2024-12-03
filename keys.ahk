@@ -6,26 +6,78 @@
 ^!t:: Run A_ComSpec " /k cd /d C:\Users\saidm"
 ^!q:: Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\QMK MSYS.lnk"
 
+/*-------------------------------------------------------------------------------------------*/
+; ctrl+alt+shift+t: open powershell at current folder location in file explorer
+#HotIf WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass")
+SendMode("Input")
+^+!t::{
+    try {
+        WinHWND := WinActive()
+        for win in ComObject("Shell.Application").Windows {
+            if (win.HWND = WinHWND) {
+                dir := SubStr(win.LocationURL, 9)
+                dir := RegExReplace(dir, "%20", " ")
+                break
+            }
+        }
+        if (dir) {
+            Run("cmd", dir)
+        } else {
+            MsgBox("Failed to retrieve directory. Opening PowerShell in the desktop directory.")
+            Run("cmd", A_Desktop)
+        }
+    } catch error {
+        MsgBox("An error occurred: " . error.Message)
+        Run("cmd", A_Desktop)
+    }
+}
+
 /*---------------------------------------------------Browser Shortcut----------------------------------------------------------*/
 ^!s:: Run "msEdge.exe https://educaciodigital.cat/iesalmata/moodle/my/courses.php https://docs.google.com/document/u/1/?tgif=d"
 
-^!+d:: Run "msEdge.exe https://docs.google.com/document/u/0/?tgif=d"
-^!+g:: Run "msEdge.exe https://github.com/"
-^!+p:: Run "msEdge.exe https://www.printables.com/@GreenBit_1562343"
-
-; ^!g::{
-;     Send "{Ctrl Down}c{Ctrl Up}"
-;     Run "https://www.google.com/"
-;     WinWaitActive "Google"
-;     Send "{Ctrl Down}v{Ctrl Up}"
-;     Send "{Enter}"
-;     }
+#HotIf WinActive("ahk_exe msedge.exe")
+^!1:: Run "https://www.google.com/"
+^!2:: Run "https://docs.google.com/document/u/1/"
+^!3:: Run "https://docs.google.com/spreadsheets/u/1/?tgif=d"
+^!4:: Run "https://drive.google.com/drive/u/1/my-drive"
+^!5:: Run "https://www.youtube.com/"
+^!6:: Run "https://drive.google.com/drive/u/1/home"
+^!7:: Run "https://drive.google.com/drive/u/1/home"
+^!8:: Run "https://drive.google.com/drive/u/1/home"
+^!9:: Run "https://drive.google.com/drive/u/1/home"
+^!0:: Run "https://drive.google.com/drive/u/1/home"
+#HotIf
 
 /*-----------------------------------------------------File Explorer------------------------------------------------------------*/
 #!a:: Run "C:\Users\saidm\Archive"
 #!c:: Run "C:\Users\saidm\Pictures\Screenshots"
 #!d:: Run "C:\Users\saidm\Downloads"
 #!p:: Run "C:\Users\saidm\Pictures"
+
+/*-------------------------------------------------------------------------------------------*/
+
+; Toggle Hidden Files in File Explorer
+^F2:: CheckActiveWindow()
+CheckActiveWindow() {
+    global
+    ID := WinExist("A")
+    win_Class := WinGetClass("ahk_id " ID)
+    WClasses := "CabinetWClass ExploreWClass"
+    if InStr(WClasses, win_Class)
+        Toggle_HiddenFiles_Display()
+}
+
+Toggle_HiddenFiles_Display() {
+    global
+    RootKey := "HKEY_CURRENT_USER"
+    SubKey := "Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+    HiddenFiles_Status := RegRead(RootKey "\" SubKey, "Hidden")
+    if (HiddenFiles_Status = 2)
+        RegWrite(1, "REG_DWORD", RootKey "\" SubKey, "Hidden")
+    else
+        RegWrite(2, "REG_DWORD", RootKey "\" SubKey, "Hidden")
+    PostMessage(0x111, 41504, , , "ahk_id " ID)
+}
 
 /*---------------------------------------------------Symbols Shortcut----------------------------------------------------------*/
 ; :*?B0:"::{"}{Left}
@@ -126,8 +178,6 @@ CapsLock:: send "{Alt Down}{Tab}{Alt Up}"
 ^+Up:: send "{Up 3}"
 ^+Down:: send "{Down 3}"
 
-
-
 ; Custom scroll behavior with touchpad detection
 +WheelDown:: {
 
@@ -210,7 +260,7 @@ n:: {
 
 ; Renaming a bunch of files
 #HotIf WinActive("ahk_exe explorer.exe")
-^!r:: {
+^!+r:: {
     Send("^c")
     InputedfileName := InputBox("type file name").value
     counter := 0
@@ -225,7 +275,7 @@ n:: {
 
 ; Adding a preffix to the selected file names
 #HotIf WinActive("ahk_exe explorer.exe")
-^!p:: {
+^!+p:: {
     Send("^c")
     inputedPrefix := InputBox("Enter Preffix").value
     loop parse A_Clipboard, "`n", "`r" {
@@ -238,7 +288,7 @@ n:: {
 
 ; Adding a suffix to the selected file names
 #HotIf WinActive("ahk_exe explorer.exe")
-^!s:: {
+^!+s:: {
     Send("^c")
     inputedSuffix := InputBox("type suffix").value
     loop parse A_Clipboard, "`n", "`r" {
@@ -249,30 +299,6 @@ n:: {
 }
 #HotIf
 
-/*-------------------------------------------------------------------------------------------*/
-
-; Toggle Hidden Files in File Explorer
-^F2:: CheckActiveWindow()
-CheckActiveWindow() {
-    global
-    ID := WinExist("A")
-    win_Class := WinGetClass("ahk_id " ID)
-    WClasses := "CabinetWClass ExploreWClass"
-    if InStr(WClasses, win_Class)
-        Toggle_HiddenFiles_Display()
-}
-
-Toggle_HiddenFiles_Display() {
-    global
-    RootKey := "HKEY_CURRENT_USER"
-    SubKey := "Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
-    HiddenFiles_Status := RegRead(RootKey "\" SubKey, "Hidden")
-    if (HiddenFiles_Status = 2)
-        RegWrite(1, "REG_DWORD", RootKey "\" SubKey, "Hidden")
-    else
-        RegWrite(2, "REG_DWORD", RootKey "\" SubKey, "Hidden")
-    PostMessage(0x111, 41504, , , "ahk_id " ID)
-}
 
 /*-------------------------------------------------------------------------------------------*/
 ; Search for the selected text on google
@@ -356,43 +382,12 @@ Toggle_HiddenFiles_Display() {
 
 ^+z:: Send "^y"
 
-XButton2::{
+XButton2:: {
     Send "{Shift down}{MButton down}"
     KeyWait "XButton2"
     Send "{Shift up}{MButton up}"
 }
 
-#HotIf
-
-
-/*-------------------------------------------------------------------------------------------*/
-
-#HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
-^+v:: { ; Ctrl + Shift + V as the hotkey
-    Send("^l")
-    Sleep 100
-    Send("cmd{Enter}")
-    WinWaitActive "ahk_exe WindowsTerminal.exe"
-    Send "Code .{Enter}"
-    Sleep 1000
-    if WinExist("ahk_exe WindowsTerminal.exe") {
-        WinClose ; Use the window found by WinExist.
-    }
-}
-
-#HotIf
-
-#HotIf WinActive("ahk_exe msedge.exe")
-^!1:: Run "https://www.google.com/"
-^!2:: Run "https://docs.google.com/document/u/1/"
-^!3:: Run "https://docs.google.com/spreadsheets/u/1/?tgif=d"
-^!4:: Run "https://drive.google.com/drive/u/1/my-drive"
-^!5:: Run "https://www.youtube.com/"
-^!6:: Run "https://drive.google.com/drive/u/1/home"
-^!7:: Run "https://drive.google.com/drive/u/1/home"
-^!8:: Run "https://drive.google.com/drive/u/1/home"
-^!9:: Run "https://drive.google.com/drive/u/1/home"
-^!0:: Run "https://drive.google.com/drive/u/1/home"
 #HotIf
 
 /*-----------------------------------------Auto Wrap--------------------------------------------------*/
@@ -470,57 +465,18 @@ IsTextSelected() {
 
 ; }
 
+/*-------------------------------------------------------------------------------------------*/
 
-
-
-
-
-
-
-
-
-
-
-
-
-; ctrl+shift+p: open powershell at current folder location in file explorer
-
-
-; run script as admin (reload if not as admin) 
-if not A_IsAdmin
-    {
-       Run("*RunAs `"" A_ScriptFullPath "`"")  ; Requires v1.0.92.01+
-       ExitApp()
+#HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
+^+!C:: { ; Ctrl + Shift + V as the hotkey
+    Send("^l")
+    Sleep 100
+    Send("cmd{Enter}")
+    WinWaitActive "ahk_exe WindowsTerminal.exe"
+    Send "Code .{Enter}"
+    Sleep 1000
+    if WinExist("ahk_exe WindowsTerminal.exe") {
+        WinClose ; Use the window found by WinExist.
     }
-    ; V1toV2: Removed #NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-    ; #Warn  ; Enable warnings to assist with detecting common errors.
-    SendMode("Input")  ; Recommended for new scripts due to its superior speed and reliability.
-    SetWorkingDir(A_ScriptDir)  ; Ensures a consistent starting directory.
-    #SingleInstance force
-    
-    
-    #HotIf WinActive("ahk_class CabinetWClass", )
-    ^+p::
-    { ; V1toV2: Added bracket
-    global ; V1toV2: Made function global
-        pwshHere()
-        return
-    } ; V1toV2: Added bracket in the end
-    #HotIf
-    
-    
-    pwshHere(){
-    If WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass") {
-          If WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass") {
-            WinHWND := WinActive()
-            For win in ComObject("Shell.Application").Windows
-                If (win.HWND = WinHWND) {
-                    dir := SubStr(win.LocationURL, 9) ; remove "file:///"
-                    dir := RegExReplace(dir, "%20", " ")
-                    Break
-                }
-        }
-        Run("pwsh", dir ? dir : A_Desktop)
-        }
-    
-    }
+}
+#HotIf
