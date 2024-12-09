@@ -10,7 +10,7 @@
 ; ctrl+alt+shift+t: open powershell at current folder location in file explorer
 #HotIf WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass")
 SendMode("Input")
-^+!t::{
+^+!t:: {
     try {
         WinHWND := WinActive()
         for win in ComObject("Shell.Application").Windows {
@@ -91,7 +91,14 @@ Toggle_HiddenFiles_Display() {
 ; :X*:[::send '[]{Left}'
 
 /*------------------------------------------------------Text Editor------------------------------------------------------------*/
+#HotIf !WinActive('ahk_exe Code.exe')
 ^!l:: Send '{Home}{Shift Down}{End}{Shift Up}'
+^d:: {
+    SendInput '{Ctrl Down}{Left}{Ctrl Up}'
+    SendInput '{Ctrl Down}{Shift Down}{Right}{Shift Up}{Ctrl Up}'
+    SendInput '{Shift Down}{Left}{Shift Up}'
+}
+#HotIf
 ^+Delete:: Send '{Home}{Shift Down}{End}{Shift Up}{Delete}'
 ^+Backspace:: Send '{Home}{Shift Down}{End}{Shift Up}{Delete}'
 +Delete:: Send '{Ctrl Down}{Left}{Ctrl Up}{Ctrl Down}{Shift Down}{Right}{Ctrl Up}{Shift Down}{Delete}'
@@ -362,7 +369,7 @@ n:: {
         if (MsgBox("Downloaded as: " fileName "`nTo: " downloadPath "`n`n" "Open Download folder?", "Success", "64 0x4") = "Yes")
             Run("explorer.exe `"" downloadPath "`"")
     } catch as err {
-        MsgBox("Download failed: " err.Message, "Error", "16")
+        MsgBox("Download failed: " err.message, "Error", "16")
     }
 }
 
@@ -388,51 +395,13 @@ XButton2:: {
     Send "{Shift up}{MButton up}"
 }
 
+XButton1:: Send "{ESC}"
+
 #HotIf
 
 /*-----------------------------------------Auto Wrap--------------------------------------------------*/
-^+":: {
-    Send "^x"
-    Send '""{Left}'
-    Send '^v'
-    Send '{Right}'
-}
 
-^+':: {
-    Send "^x"
-    Send "''{Left}"
-    Send "^v"
-    Send '{Right}'
-}
-
-^+{:: {
-    Send "^x"
-    Send '{}{Left}'
-    Send '^v'
-    Send '{Right}'
-}
-
-^+(:: {
-    Send "^x"
-    Send '(){Left}'
-    Send '^v'
-    Send '{Right}'
-}
-
-^+[:: {
-    Send "^x"
-    Send '[]{Left}'
-    Send '^v'
-    Send '{Right}'
-}
-
-^+<:: {
-    Send "^x"
-    Send '<>{Left}'
-    Send '^v'
-    Send '{Right}'
-}
-
+#HotIf !WinActive('ahk_exe Code.exe')
 ; Function to check if text is selected
 IsTextSelected() {
     ; Save the current clipboard content
@@ -455,20 +424,108 @@ IsTextSelected() {
     }
 }
 
-; ^f::{
-; ; Example usage
-; if IsTextSelected() {
-;     MsgBox "Text is selected"
-; } else {
-;     MsgBox "No text is selected"
+; ^f:: {
+;     ; Example usage
+;     if IsTextSelected() {
+;         MsgBox "Text is selected"
+;     } else {
+;         MsgBox "No text is selected"
+;     }
 ; }
 
-; }
+:X*:":: {
+    ; Example usage
+    if IsTextSelected() {
+        SendInput '^x'
+        SendInput '{Raw}""'
+        SendInput '{Left}'
+        SendInput '^v'
+        SendInput '{Right}'
+    } else {
+        SendInput '{Raw}""'
+        SendInput '{Left}'
+    }
+}
 
+:X*:':: {
+    ; Example usage
+    if IsTextSelected() {
+        SendInput "^x"
+        ClipWait
+        SendInput "{Raw}''"
+        SendInput "{Left}"
+        SendInput "^v"
+        SendInput "{Right}"
+    } else {
+        SendInput "{Raw}''"
+        SendInput "{Left}"
+    }
+}
+
+:X*:{:: {
+    ; Example usage
+    if IsTextSelected() {
+        SendInput "^x"
+        ClipWait
+        SendInput "{Raw}{}"
+        SendInput "{Left}"
+        SendInput "^v"
+        SendInput "{Right}"
+    } else {
+        SendInput "{Raw}{}"
+        SendInput "{Left}"
+    }
+}
+
+:X*:(:: {
+    ; Example usage
+    if IsTextSelected() {
+        SendInput "^x"
+        ClipWait
+        SendInput "{Raw}()"
+        SendInput "{Left}"
+        SendInput "^v"
+        SendInput "{Right}"
+    } else {
+        SendInput "{Raw}()"
+        SendInput "{Left}"
+    }
+}
+
+:X*:[:: {
+    ; Example usage
+    if IsTextSelected() {
+        SendInput "^x"
+        ClipWait
+        SendInput "{Raw}[]"
+        SendInput "{Left}"
+        SendInput "^v"
+        SendInput "{Right}"
+    } else {
+        SendInput "{Raw}[]"
+        SendInput "{Left}"
+    }
+}
+
+:X*:<:: {
+    ; Example usage
+    if IsTextSelected() {
+        SendInput "^x"
+        SendInput "{Raw}<>"
+        SendInput "{Left}"
+        SendInput "^v"
+        SendInput "{Right}"
+    } else {
+        SendInput "{Raw}<>"
+        SendInput "{Left}"
+    }
+}
+
+#HotIf
 /*-------------------------------------------------------------------------------------------*/
 
 #HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
-^+!C:: { ; Ctrl + Shift + V as the hotkey
++!C:: { ; Ctrl + Shift + V as the hotkey
     Send("^l")
     Sleep 100
     Send("cmd{Enter}")
