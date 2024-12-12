@@ -6,32 +6,17 @@
 ^!t:: Run A_ComSpec " /k cd /d C:\Users\saidm"
 ^!q:: Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\QMK MSYS.lnk"
 
-/*-------------------------------------------------------------------------------------------*/
-; ctrl+alt+shift+t: open powershell at current folder location in file explorer
-#HotIf WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass")
-SendMode("Input")
-^+!t:: {
-    try {
-        WinHWND := WinActive()
-        for win in ComObject("Shell.Application").Windows {
-            if (win.HWND = WinHWND) {
-                dir := SubStr(win.LocationURL, 9)
-                dir := RegExReplace(dir, "%20", " ")
-                break
-            }
-        }
-        if (dir) {
-            Run("cmd", dir)
-        } else {
-            MsgBox("Failed to retrieve directory. Opening PowerShell in the desktop directory.")
-            Run("cmd", A_Desktop)
-        }
-    } catch error {
-        MsgBox("An error occurred: " . error.Message)
-        Run("cmd", A_Desktop)
-    }
-}
-
+/*---------------------------------------------------Browser Shortcut----------------------------------------------------------*/
+AppsKey & 1:: Run "explorer"
+AppsKey & 2:: Run "msEdge"
+AppsKey & 3:: Run "C:\Users\saidm\AppData\Local\Programs\Microsoft VS Code\Code.exe"
+AppsKey & 4:: Run "C:\Users\saidm\AppData\Local\Autodesk\webdeploy\production\6a0c9611291d45bb9226980209917c3d\FusionLauncher.exe"
+AppsKey & 5:: Run "C:\Program Files\Prusa3D\PrusaSlicer\prusa-slicer.exe"
+AppsKey & 6:: Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\QMK MSYS.lnk"
+AppsKey & 7:: Run "notepad"
+AppsKey & 8:: Run "notepad"
+AppsKey & 9:: Run "notepad"
+AppsKey & 0:: Run "notepad"
 /*---------------------------------------------------Browser Shortcut----------------------------------------------------------*/
 ^!s:: Run "msEdge.exe https://educaciodigital.cat/iesalmata/moodle/my/courses.php https://docs.google.com/document/u/1/?tgif=d"
 
@@ -537,3 +522,28 @@ IsTextSelected() {
     }
 }
 #HotIf
+
+; ctrl+alt+shift+t: open powershell at current folder location in file explorer
+#HotIf WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass")
+SendMode("Input")
+^+!t:: {
+    try {
+        WinHWND := WinActive()
+        for win in ComObject("Shell.Application").Windows {
+            if (win.HWND = WinHWND) {
+                dir := SubStr(win.LocationURL, 9)
+                dir := RegExReplace(dir, "%20", " ")
+                break
+            }
+        }
+        if (dir) {
+            Run("cmd", dir)
+        } else {
+            MsgBox("Failed to retrieve directory. Opening PowerShell in the desktop directory.")
+            Run("cmd", A_Desktop)
+        }
+    } catch error {
+        MsgBox("An error occurred: " . error.Message)
+        Run("cmd", A_Desktop)
+    }
+}
