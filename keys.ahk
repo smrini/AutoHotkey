@@ -3,7 +3,7 @@
 !n:: Run "notepad"
 !b:: Run "msEdge"
 !c:: Run "C:\Users\saidm\AppData\Local\Programs\Microsoft VS Code\Code.exe"
-^!t:: Run A_ComSpec " /k cd /d C:\Users\saidm"
+^!t:: Run A_ComSpec " /k cd /d %USERPROFILE%"
 ^!q:: Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\QMK MSYS.lnk"
 
 /*---------------------------------------------------Browser Shortcut----------------------------------------------------------*/
@@ -86,38 +86,8 @@ Toggle_HiddenFiles_Display() {
 #HotIf
 ^+Delete:: Send '{Home}{Shift Down}{End}{Shift Up}{Delete}'
 ^+Backspace:: Send '{Home}{Shift Down}{End}{Shift Up}{Delete}'
-+Delete:: Send '{Ctrl Down}{Left}{Ctrl Up}{Ctrl Down}{Shift Down}{Right}{Ctrl Up}{Shift Down}{Delete}'
++Delete:: Send '{Ctrl Down}{Right}{Ctrl Up}{Ctrl Down}{Shift Down}{Left}{Ctrl Up}{Shift Down}{Delete}'
 +Backspace:: Send '{Ctrl Down}{Left}{Ctrl Up}{Ctrl Down}{Shift Down}{Right}{Ctrl Up}{Shift Down}{Delete}'
-
-; !Up::{
-;     Send '{Home}{Shift Down}{End}{Shift Up}'
-;     sleep 10
-;     Send '{Ctrl Down}x{Ctrl Up}'
-;     sleep 10
-;     Send '{Backspace}'
-;     sleep 10
-;     Send '{Home}'
-;     sleep 10
-;     Send '{Ctrl Down}v{Ctrl Up}'
-;     sleep 10
-;     Send '{Enter}{Up}'
-; }
-
-; !Down::{
-;     Send '{Home}{Shift Down}{End}{Shift Up}'
-;     sleep 10
-;     Send '{Ctrl Down}x{Ctrl Up}'
-;     sleep 10
-;     Send '{Backspace}'
-;     sleep 10
-;     Send '{Down}'
-;     sleep 10
-;     Send '{Home}'
-;     sleep 10
-;     Send '{Ctrl Down}v{Ctrl Up}'
-;     sleep 10
-;     Send '{Enter}{Down}'
-; }
 
 ::]FullDate:: {
     Send A_DDD " " A_DD " " A_MMM " " A_YYYY "."
@@ -135,7 +105,6 @@ Toggle_HiddenFiles_Display() {
     Send A_Hour ":" A_Min ":" A_Sec
 }
 
-
 /*------------------------------------------------------HotStrings-------------------------------------------------------------*/
 
 ;Read More about HotStrings
@@ -145,7 +114,6 @@ Toggle_HiddenFiles_Display() {
 ::isnt::isn't
 ::wasnt::wasn't
 ::werent::weren't
-::wont::won't
 ::wouldnt::wouldn't
 ::shouldnt::shouldn't
 ::couldnt::couldn't
@@ -167,12 +135,11 @@ Toggle_HiddenFiles_Display() {
 CapsLock:: send "{Alt Down}{Tab}{Alt Up}"
 ^CapsLock:: send "#+s"
 
-^+Up:: send "{Up 3}"
-^+Down:: send "{Down 3}"
+^+Up:: send "{Up 5}"
+^+Down:: send "{Down 5}"
 
 ; Custom scroll behavior with touchpad detection
 +WheelDown:: {
-
     lastScrollTime := 0
     scrollThreshold := 100
 
@@ -186,7 +153,6 @@ CapsLock:: send "{Alt Down}{Tab}{Alt Up}"
 }
 
 +WheelUp:: {
-
     lastScrollTime := 0
     scrollThreshold := 100
 
@@ -243,11 +209,6 @@ n:: {
 }
 */
 
-; #HotIf !WinActive("ahk_class illustrator")
-; ---
-; #HotIf
-
-
 /*----------------------------------------------------------Tools--------------------------------------------------------------*/
 
 ; Renaming a bunch of files
@@ -302,7 +263,7 @@ n:: {
 }
 
 ;Paste the copied link or text in a new tab in the browser
-^0:: {
+^!#0:: {
     Send("^c")
     ClipWait
     If WinExist("ahk_class Chrome_WidgetWin_1") {
@@ -374,10 +335,18 @@ n:: {
 
 ^+z:: Send "^y"
 
+; XButton2:: {
+;     Send "{Shift down}{MButton down}"
+;     KeyWait "XButton2"
+;     Send "{Shift up}{MButton up}"
+; }
+
 XButton2:: {
-    Send "{Shift down}{MButton down}"
-    KeyWait "XButton2"
-    Send "{Shift up}{MButton up}"
+    Send("{Shift down}{MButton down}")
+    while GetKeyState("XButton2", "P") {
+        Sleep(10)
+    }
+    Send("{Shift up}{MButton up}")
 }
 
 XButton1:: Send "{ESC}"
@@ -386,7 +355,7 @@ XButton1:: Send "{ESC}"
 
 /*-----------------------------------------Auto Wrap--------------------------------------------------*/
 
-#HotIf !WinActive('ahk_exe Code.exe')
+#HotIf !WinActive('ahk_exe Code.exe') || !WinActive('ahk_exe Illustrator.exe')
 ; Function to check if text is selected
 IsTextSelected() {
     ; Save the current clipboard content
@@ -510,7 +479,8 @@ IsTextSelected() {
 /*-------------------------------------------------------------------------------------------*/
 
 #HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
-+!C:: { ; Ctrl + Shift + V as the hotkey
+; open the current folder in VS Code
++!C:: {
     Send("^l")
     Sleep 100
     Send("cmd{Enter}")
