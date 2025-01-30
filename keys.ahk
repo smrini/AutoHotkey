@@ -353,9 +353,12 @@ XButton1:: Send "{ESC}"
 
 #HotIf
 
-/*-----------------------------------------Auto Wrap--------------------------------------------------*/
 
-#HotIf !WinActive('ahk_exe Code.exe') || !WinActive('ahk_exe Illustrator.exe')
+/*-----------------------------------------Auto Wrap--------------------------------------------------*/
+GroupAdd "MyGroup", "ahk_exe Illustrator.exe"
+GroupAdd "MyGroup", "ahk_exe Code.exe"
+
+#HotIf !WinActive("ahk_group MyGroup")
 ; Function to check if text is selected
 IsTextSelected() {
     ; Save the current clipboard content
