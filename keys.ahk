@@ -18,7 +18,7 @@ AppsKey & 8:: Run "notepad"
 AppsKey & 9:: Run "notepad"
 AppsKey & 0:: Run "notepad"
 /*---------------------------------------------------Browser Shortcut----------------------------------------------------------*/
-^!s:: Run "msEdge.exe https://educaciodigital.cat/iesalmata/moodle/my/courses.php https://docs.google.com/document/u/1/?tgif=d"
+^!s:: Run "msEdge.exe https://educaciodigital.cat/iesalmata/moodle/my/courses.php https://docs.google.com/document/u/2/?tgif=d"
 
 #HotIf WinActive("ahk_exe msedge.exe")
 ^!1:: Run "https://www.google.com/"
@@ -134,6 +134,11 @@ Toggle_HiddenFiles_Display() {
 +CapsLock::CapsLock
 CapsLock:: send "{Alt Down}{Tab}{Alt Up}"
 ^CapsLock:: send "#+s"
+
+#HotIf WinActive("Typing Practice and 1 more page - Personal - Microsoft​ Edge")
+CapsLock:: SendInput '{Ctrl Down}{Left}{Ctrl Up}'
+#HotIf
+
 
 ^+Up:: send "{Up 5}"
 ^+Down:: send "{Down 5}"
