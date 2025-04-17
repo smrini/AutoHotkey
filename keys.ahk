@@ -77,7 +77,7 @@ Toggle_HiddenFiles_Display() {
 
 /*------------------------------------------------------Text Editor------------------------------------------------------------*/
 #HotIf !WinActive('ahk_exe Code.exe')
-^!l:: Send '{Home}{Shift Down}{End}{Shift Up}'
+^l:: Send '{Home}{Shift Down}{End}{Shift Up}'
 ^d:: {
     SendInput '{Ctrl Down}{Left}{Ctrl Up}'
     SendInput '{Ctrl Down}{Shift Down}{Right}{Shift Up}{Ctrl Up}'
@@ -128,6 +128,8 @@ Toggle_HiddenFiles_Display() {
 ::wouldve::would've
 ::didnt::didn't
 ::hasnt::hasn't
+::idk::I don't know
+
 
 /*--------------------------------------------------KeyBoard Remaping----------------------------------------------------------*/
 
@@ -268,7 +270,7 @@ n:: {
 }
 
 ;Paste the copied link or text in a new tab in the browser
-^!#0:: {
+^!#s:: {
     Send("^c")
     ClipWait
     If WinExist("ahk_class Chrome_WidgetWin_1") {
@@ -341,18 +343,31 @@ n:: {
 ^+z:: Send "^y"
 
 ; XButton2:: {
-;     Send "{Shift down}{MButton down}"
-;     KeyWait "XButton2"
-;     Send "{Shift up}{MButton up}"
+;     Send("{Shift down}{MButton down}")
+;     while GetKeyState("XButton2", "P") {
+;         Sleep(10)
+;     }
+;     Send("{Shift up}{MButton up}")
 ; }
 
 XButton2:: {
-    Send("{Shift down}{MButton down}")
-    while GetKeyState("XButton2", "P") {
-        Sleep(10)
+    try {
+        Send("{Shift down}{MButton down}")
+        KeyWait "XButton2"
+    } finally {
+        Send("{Shift up}{MButton up}")
     }
-    Send("{Shift up}{MButton up}")
 }
+
+; XButton2:: {
+;     try {
+;         Send("{Shift down}{MButton down}")
+;         KeyWait "XButton2", "T5"  ; Wait up to 5 seconds
+;     } finally {
+;         Send("{Shift up}{MButton up}")
+;     }
+; }
+
 
 XButton1:: Send "{ESC}"
 
@@ -486,20 +501,67 @@ IsTextSelected() {
 #HotIf
 /*-------------------------------------------------------------------------------------------*/
 
+; #HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
+; open the current folder in VS Code
+; +!C:: {
+;     Send("^l")
+;     Sleep 100
+;     Send("cmd{Enter}")
+;     WinWaitActive "ahk_exe WindowsTerminal.exe"
+;     Send "Code .{Enter}"
+;     Sleep 1000
+;     if WinExist("ahk_exe WindowsTerminal.exe") {
+;         WinClose ; Use the window found by WinExist.
+;     }
+; }
+; #HotIf
+
+
+
 #HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
 ; open the current folder in VS Code
 +!C:: {
+    ; Copy the current path
     Send("^l")
-    Sleep 100
+    WinWait("A")  ; Wait for the address bar to be active
     Send("cmd{Enter}")
-    WinWaitActive "ahk_exe WindowsTerminal.exe"
-    Send "Code .{Enter}"
-    Sleep 1000
+    
+    ; Wait for terminal to open with a timeout
+    if !WinWaitActive("ahk_exe WindowsTerminal.exe",, 3) {
+        MsgBox("Terminal failed to open within the timeout period.")
+        return
+    }
+    
+    ; Send the command to open VS Code
+    Send("Code .{Enter}")
+    
+    ; Wait for VS Code to start before closing terminal
+    Sleep(500)  ; Small initial wait
+    
+    ; Try to detect if VS Code is starting
+    startTime := A_TickCount
+    timeout := 5000  ; 5 second timeout
+    
+    while ((A_TickCount - startTime) < timeout) {
+        if WinExist("ahk_exe Code.exe") {
+            break
+        }
+        Sleep(100)
+    }
+    
+    ; Close the terminal window if it exists
     if WinExist("ahk_exe WindowsTerminal.exe") {
-        WinClose ; Use the window found by WinExist.
+        WinClose
     }
 }
 #HotIf
+
+
+
+
+
+
+
 
 ; ctrl+alt+shift+t: open powershell at current folder location in file explorer
 #HotIf WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass")
