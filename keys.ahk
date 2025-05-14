@@ -1,16 +1,18 @@
-﻿#Requires AutoHotkey v2.0
+#Requires AutoHotkey v2.0
+
+userDirectory := EnvGet("USERPROFILE") . "\"
 
 !n:: Run "notepad"
 !b:: Run "msEdge"
-!c:: Run "C:\Users\saidm\AppData\Local\Programs\Microsoft VS Code\Code.exe"
+!c:: Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe"
 ^!t:: Run A_ComSpec " /k cd /d %USERPROFILE%"
 ^!q:: Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\QMK MSYS.lnk"
 
 /*---------------------------------------------------Browser Shortcut----------------------------------------------------------*/
 AppsKey & 1:: Run "explorer"
 AppsKey & 2:: Run "msEdge"
-AppsKey & 3:: Run "C:\Users\saidm\AppData\Local\Programs\Microsoft VS Code\Code.exe"
-AppsKey & 4:: Run "C:\Users\saidm\AppData\Local\Autodesk\webdeploy\production\6a0c9611291d45bb9226980209917c3d\FusionLauncher.exe"
+AppsKey & 3:: Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe"
+AppsKey & 4:: Run userDirectory . "AppData\Local\Autodesk\webdeploy\production\6a0c9611291d45bb9226980209917c3d\FusionLauncher.exe"
 AppsKey & 5:: Run "C:\Program Files\Prusa3D\PrusaSlicer\prusa-slicer.exe"
 AppsKey & 6:: Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\QMK MSYS.lnk"
 AppsKey & 7:: Run "notepad"
@@ -21,23 +23,23 @@ AppsKey & 0:: Run "notepad"
 ^!s:: Run "msEdge.exe https://educaciodigital.cat/iesalmata/moodle/my/courses.php https://docs.google.com/document/u/2/?tgif=d"
 
 #HotIf WinActive("ahk_exe msedge.exe")
-^!1:: Run "https://www.google.com/"
-^!2:: Run "https://docs.google.com/document/u/1/"
-^!3:: Run "https://docs.google.com/spreadsheets/u/1/?tgif=d"
-^!4:: Run "https://drive.google.com/drive/u/1/my-drive"
-^!5:: Run "https://www.youtube.com/"
-^!6:: Run "https://drive.google.com/drive/u/1/home"
-^!7:: Run "https://drive.google.com/drive/u/1/home"
-^!8:: Run "https://drive.google.com/drive/u/1/home"
-^!9:: Run "https://drive.google.com/drive/u/1/home"
-^!0:: Run "https://drive.google.com/drive/u/1/home"
+AppsKey & 1:: Run "https://www.google.com/"
+AppsKey & 2:: Run "https://docs.google.com/document/u/1/"
+AppsKey & 3:: Run "https://drive.google.com/drive/u/1/my-drive"
+AppsKey & 4:: Run "https://www.youtube.com/"
+AppsKey & 5:: Run "notepad"
+AppsKey & 6:: Run "notepad"
+AppsKey & 7:: Run "notepad"
+AppsKey & 8:: Run "notepad"
+AppsKey & 9:: Run "notepad"
+AppsKey & 0:: Run "http://localhost/phpmyadmin"
 #HotIf
 
 /*-----------------------------------------------------File Explorer------------------------------------------------------------*/
-#!a:: Run "C:\Users\saidm\Archive"
-#!c:: Run "C:\Users\saidm\Pictures\Screenshots"
-#!d:: Run "C:\Users\saidm\Downloads"
-#!p:: Run "C:\Users\saidm\Pictures"
+#!a:: Run userDirectory . "Archive"
+#!c:: Run userDirectory . "Pictures\Screenshots"
+#!d:: Run userDirectory . "Downloads"
+#!p:: Run userDirectory . "Pictures"
 
 /*-------------------------------------------------------------------------------------------*/
 
@@ -64,17 +66,6 @@ Toggle_HiddenFiles_Display() {
     PostMessage(0x111, 41504, , , "ahk_id " ID)
 }
 
-/*---------------------------------------------------Symbols Shortcut----------------------------------------------------------*/
-; :*?B0:"::{"}{Left}
-; :*?B0:(::{)}{Left}
-; :*?B0:[::{]}{Left}
-; :*?B0:{::{}}{Left}
-
-; :X*:{::send '{{}{}}{Left}'
-; :X*:(::send '(){Left}'
-; :X*:"::send '""{Left}'
-; :X*:[::send '[]{Left}'
-
 /*------------------------------------------------------Text Editor------------------------------------------------------------*/
 #HotIf !WinActive('ahk_exe Code.exe')
 ^l:: Send '{Home}{Shift Down}{End}{Shift Up}'
@@ -89,19 +80,19 @@ Toggle_HiddenFiles_Display() {
 +Delete:: Send '{Ctrl Down}{Right}{Ctrl Up}{Ctrl Down}{Shift Down}{Left}{Ctrl Up}{Shift Down}{Delete}'
 +Backspace:: Send '{Ctrl Down}{Left}{Ctrl Up}{Ctrl Down}{Shift Down}{Right}{Ctrl Up}{Shift Down}{Delete}'
 
-::]FullDate:: {
+::]FullDate:: { ;Full Date
     Send A_DDD " " A_DD " " A_MMM " " A_YYYY "."
 }
 
-::]ND:: {
+::]ND:: { ;Curret Date
     Send A_DD "/" A_MM "/" A_YYYY
 }
 
-::]CD:: {
+::]CD:: { ;Curret Day
     Send A_DDDD " "
 }
 
-::]Time:: {
+::]Time:: { ;Curret Day
     Send A_Hour ":" A_Min ":" A_Sec
 }
 
@@ -172,18 +163,68 @@ CapsLock:: SendInput '{Ctrl Down}{Left}{Ctrl Up}'
     lastScrollTime := currentTime
 }
 
-+WheelLeft:: Send "{WheelLeft 8}"
-+WheelRight:: Send "{WheelRight 8}"
++WheelLeft:: {
+    lastScrollTime := 0
+    scrollThreshold := 100
 
-^!WheelUp::Volume_Up
-^!WheelDown::Volume_Down
+    currentTime := A_TickCount
+    if (currentTime - lastScrollTime < scrollThreshold) {
+        Send "{WheelLeft}"
+    } else {
+        Send "{WheelLeft 8}"
+    }
+    lastScrollTime := currentTime
+}
+
++WheelRight:: {
+    lastScrollTime := 0
+    scrollThreshold := 100
+
+    currentTime := A_TickCount
+    if (currentTime - lastScrollTime < scrollThreshold) {
+        Send "{WheelRight}"
+    } else {
+        Send "{WheelRight 8}"
+    }
+    lastScrollTime := currentTime
+}
+
+^!WheelUp:: {
+    lastScrollTime := 0
+    scrollThreshold := 100
+
+    currentTime := A_TickCount
+    if (currentTime - lastScrollTime < scrollThreshold) {
+        Send "{WheelUp}"
+    } else {
+        Send "{Volume_Up}"
+    }
+    lastScrollTime := currentTime
+}
+
+^!WheelDown:: {
+    lastScrollTime := 0
+    scrollThreshold := 100
+
+    currentTime := A_TickCount
+    if (currentTime - lastScrollTime < scrollThreshold) {
+        Send "{WheelDown}"
+    } else {
+        Send "{Volume_Down}"
+    }
+    lastScrollTime := currentTime
+}
+
+/* ^!WheelUp::Volume_Up
+^!WheelDown::Volume_Down */
+
 ^!MButton::Volume_Mute
 
 
 /*---------------------------------------------------AHK Ctr Shortcut----------------------------------------------------------*/
 
-^!\:: Suspend
-^!=:: Reload
+^!,:: Suspend
+^!.:: Reload
 ^!-:: Edit
 
 /*------------------------------------------------------Garbage Code-----------------------------------------------------------*/
@@ -342,14 +383,6 @@ n:: {
 
 ^+z:: Send "^y"
 
-; XButton2:: {
-;     Send("{Shift down}{MButton down}")
-;     while GetKeyState("XButton2", "P") {
-;         Sleep(10)
-;     }
-;     Send("{Shift up}{MButton up}")
-; }
-
 XButton2:: {
     try {
         Send("{Shift down}{MButton down}")
@@ -358,16 +391,6 @@ XButton2:: {
         Send("{Shift up}{MButton up}")
     }
 }
-
-; XButton2:: {
-;     try {
-;         Send("{Shift down}{MButton down}")
-;         KeyWait "XButton2", "T5"  ; Wait up to 5 seconds
-;     } finally {
-;         Send("{Shift up}{MButton up}")
-;     }
-; }
-
 
 XButton1:: Send "{ESC}"
 
@@ -500,68 +523,57 @@ IsTextSelected() {
 
 #HotIf
 /*-------------------------------------------------------------------------------------------*/
-
-; #HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
-; open the current folder in VS Code
-; +!C:: {
-;     Send("^l")
-;     Sleep 100
-;     Send("cmd{Enter}")
-;     WinWaitActive "ahk_exe WindowsTerminal.exe"
-;     Send "Code .{Enter}"
-;     Sleep 1000
-;     if WinExist("ahk_exe WindowsTerminal.exe") {
-;         WinClose ; Use the window found by WinExist.
-;     }
-; }
-; #HotIf
-
-
-
-#HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
+/* #HotIf WinActive("ahk_exe explorer.exe") ; Only works when File Explorer is active
 ; open the current folder in VS Code
 +!C:: {
     ; Copy the current path
     Send("^l")
     WinWait("A")  ; Wait for the address bar to be active
     Send("cmd{Enter}")
-    
+
     ; Wait for terminal to open with a timeout
-    if !WinWaitActive("ahk_exe WindowsTerminal.exe",, 3) {
+    if !WinWaitActive("ahk_class ConsoleWindowClass", , 3) {
         MsgBox("Terminal failed to open within the timeout period.")
         return
     }
-    
+
     ; Send the command to open VS Code
     Send("Code .{Enter}")
-    
-    ; Wait for VS Code to start before closing terminal
-    Sleep(500)  ; Small initial wait
-    
-    ; Try to detect if VS Code is starting
-    startTime := A_TickCount
-    timeout := 5000  ; 5 second timeout
-    
-    while ((A_TickCount - startTime) < timeout) {
-        if WinExist("ahk_exe Code.exe") {
-            break
-        }
-        Sleep(100)
+
+    if WinWaitActive("ahk_exe Code.exe") {
+        WinClose("ahk_class ConsoleWindowClass")
+        return
     }
-    
-    ; Close the terminal window if it exists
-    if WinExist("ahk_exe WindowsTerminal.exe") {
-        WinClose
+
+}
+#HotIf
+*/
+
+
+#HotIf WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass")
+SendMode("Input")
++!C:: {
+    try {
+        WinHWND := WinActive()
+        for win in ComObject("Shell.Application").Windows {
+            if (win.HWND = WinHWND) {
+                dir := SubStr(win.LocationURL, 9) ; Remove "file:///"
+                dir := RegExReplace(dir, "%20", " ") ; Decode URL-encoded spaces
+                break
+            }
+        }
+        if (dir) {
+            Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " " . dir
+        } else {
+            MsgBox("Failed to retrieve directory. Opening VS Code in the desktop directory.")
+            Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " " . A_Desktop
+        }
+    } catch as err {
+        MsgBox("An error occurred: " err.Message)
+        Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " " . A_Desktop
     }
 }
 #HotIf
-
-
-
-
-
-
-
 
 ; ctrl+alt+shift+t: open powershell at current folder location in file explorer
 #HotIf WinActive("ahk_class CabinetWClass") || WinActive("ahk_class ExploreWClass")
@@ -582,8 +594,9 @@ SendMode("Input")
             MsgBox("Failed to retrieve directory. Opening PowerShell in the desktop directory.")
             Run("cmd", A_Desktop)
         }
-    } catch error {
-        MsgBox("An error occurred: " . error.Message)
+    } catch as err {
+        MsgBox("An error occurred: " err.Message)
         Run("cmd", A_Desktop)
     }
 }
+#HotIf
