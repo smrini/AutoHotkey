@@ -557,20 +557,22 @@ SendMode("Input")
         WinHWND := WinActive()
         for win in ComObject("Shell.Application").Windows {
             if (win.HWND = WinHWND) {
-                dir := SubStr(win.LocationURL, 9) ; Remove "file:///"
-                dir := RegExReplace(dir, "%20", " ") ; Decode URL-encoded spaces
+                ; Get the directory path
+                dir := win.Document.Folder.Self.Path
                 break
             }
         }
+        
         if (dir) {
-            Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " " . dir
+            ; Wrap the path in quotes to handle spaces and special characters
+            Run(userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " `"" . dir . "`"")
         } else {
             MsgBox("Failed to retrieve directory. Opening VS Code in the desktop directory.")
-            Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " " . A_Desktop
+            Run(userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " `"" . A_Desktop . "`"")
         }
     } catch as err {
         MsgBox("An error occurred: " err.Message)
-        Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " " . A_Desktop
+        Run(userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe" . " `"" . A_Desktop . "`"")
     }
 }
 #HotIf
@@ -583,15 +585,15 @@ SendMode("Input")
         WinHWND := WinActive()
         for win in ComObject("Shell.Application").Windows {
             if (win.HWND = WinHWND) {
-                dir := SubStr(win.LocationURL, 9)
-                dir := RegExReplace(dir, "%20", " ")
+                ; Get the directory path directly without URL encoding
+                dir := win.Document.Folder.Self.Path
                 break
             }
         }
         if (dir) {
             Run("cmd", dir)
         } else {
-            MsgBox("Failed to retrieve directory. Opening PowerShell in the desktop directory.")
+            MsgBox("Failed to retrieve directory. Opening Command Prompt in the desktop directory.")
             Run("cmd", A_Desktop)
         }
     } catch as err {
