@@ -42,6 +42,30 @@ AppsKey & 0:: Run "http://localhost/phpmyadmin"
 #!p:: Run userDirectory . "Pictures"
 
 /*-------------------------------------------------------------------------------------------*/
+; Toggle File Extensions in File Explorer
+^F3:: CheckActiveWindowForExtensions()
+CheckActiveWindowForExtensions() {
+    global
+    ID := WinExist("A")
+    win_Class := WinGetClass("ahk_id " ID)
+    WClasses := "CabinetWClass ExploreWClass"
+    if InStr(WClasses, win_Class)
+        Toggle_Extensions_Display()
+}
+
+Toggle_Extensions_Display() {
+    global
+    RootKey := "HKEY_CURRENT_USER"
+    SubKey := "Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
+    Extensions_Status := RegRead(RootKey "\" SubKey, "HideFileExt")
+    if (Extensions_Status = 1)
+        RegWrite(0, "REG_DWORD", RootKey "\" SubKey, "HideFileExt")
+    else
+        RegWrite(1, "REG_DWORD", RootKey "\" SubKey, "HideFileExt")
+    PostMessage(0x111, 41504, , , "ahk_id " ID)
+}
+
+/*-------------------------------------------------------------------------------------------*/
 
 ; Toggle Hidden Files in File Explorer
 ^F2:: CheckActiveWindow()
