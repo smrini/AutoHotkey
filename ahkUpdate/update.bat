@@ -12,6 +12,7 @@ set "BACKUP_DIR=%SCRIPT_DIR%backups"
 
 :: Check if running silently (for startup)
 if "%1"=="--silent" set "SILENT_MODE=true"
+if "%1"=="--auto-update" set "AUTO_UPDATE=true" & set "SILENT_MODE=true"
 
 echo Checking for AutoHotkey script updates...
 
@@ -38,7 +39,10 @@ if not exist "%TEMP_SCRIPT%" (
 powershell.exe -Command "$local = Get-Content '%LOCAL_SCRIPT_PATH%' -Raw -ErrorAction SilentlyContinue; $remote = Get-Content '%TEMP_SCRIPT%' -Raw; if ($local -ne $remote) { exit 0 } else { exit 1 }"
 if %ERRORLEVEL% equ 0 (
     :: Files are different - update needed
-    if "%SILENT_MODE%"=="true" (
+    if "%AUTO_UPDATE%"=="true" (
+        :: Fully automatic update - no prompts, no notifications
+        call :UpdateScript
+    ) else if "%SILENT_MODE%"=="true" (
         :: In silent mode, create a notification file
         echo Update available > "%TEMP%\ahk_update_available.txt"
         echo %date% %time% >> "%TEMP%\ahk_update_available.txt"
@@ -68,14 +72,21 @@ if "%SILENT_MODE%"=="false" pause
 exit /b 0
 
 :UpdateScript
-echo.
-echo Creating backup...
+if "%AUTO_UPDATE%"=="true" (
+    :: Silent update mode - no echo statements
+    goto :DoUpdate
+) else (
+    echo.
+    echo Creating backup...
+)
 
-:: Ensure backup directory exists
+:DoUpdate
+
+::| Ensure backup directory exists
 if not exist "%BACKUP_DIR%" (
     mkdir "%BACKUP_DIR%"
     if %ERRORLEVEL% neq 0 (
-        echo Error: Failed to create backup directory
+        if "%AUTO_UPDATE%"=="false" echo Error: Failed to create backup directory
         goto :CleanupAndExit
     )
 )
@@ -88,31 +99,29 @@ set "backup_path=%BACKUP_DIR%\%backup_filename%"
 
 copy "%LOCAL_SCRIPT_PATH%" "%backup_path%" >nul
 if %ERRORLEVEL% neq 0 (
-    echo Error: Failed to create backup
+    if "%AUTO_UPDATE%"=="false" echo Error: Failed to create backup
     goto :CleanupAndExit
 )
-echo Backup created: %backup_path%
+if "%AUTO_UPDATE%"=="false" echo Backup created: %backup_path%
 
 :: Update the script
-echo Updating script...
+if "%AUTO_UPDATE%"=="false" echo Updating script...
 copy "%TEMP_SCRIPT%" "%LOCAL_SCRIPT_PATH%" >nul
 if %ERRORLEVEL% neq 0 (
-    echo Error: Failed to update script
-    echo Restoring from backup...
+    if "%AUTO_UPDATE%"=="false" (
+        echo Error: Failed to update script
+        echo Restoring from backup...
+    )
     copy "%backup_path%" "%LOCAL_SCRIPT_PATH%" >nul
     goto :CleanupAndExit
 )
 
-echo Script updated successfully!
+if "%AUTO_UPDATE%"=="false" echo Script updated successfully!
 
-:: Ask if user wants to restart AutoHotkey
-echo.
-choice /M "Do you want to restart AutoHotkey to apply changes? (Y/N)"
-if !ERRORLEVEL! equ 1 (
-    echo Restarting AutoHotkey...
-    
-    :: Method 1: Kill existing AutoHotkey processes more effectively
-    echo Stopping existing AutoHotkey processes...
+:: Handle AutoHotkey restart
+if "%AUTO_UPDATE%"=="true" (
+    :: Automatically restart AutoHotkey without asking
+    :: Kill existing AutoHotkey processes
     taskkill /f /im "AutoHotkey32.exe" >nul 2>&1
     taskkill /f /im "AutoHotkey64.exe" >nul 2>&1
     taskkill /f /im "AutoHotkeyU32.exe" >nul 2>&1
@@ -120,11 +129,32 @@ if !ERRORLEVEL! equ 1 (
     taskkill /f /im "AutoHotkey.exe" >nul 2>&1
     
     :: Wait for processes to fully terminate
-    timeout /t 3 /nobreak >nul
+    timeout /t 2 /nobreak >nul
     
     :: Start the updated script
-    echo Starting updated script...
     start "" "%LOCAL_SCRIPT_PATH%"
+) else (
+    :: Ask if user wants to restart AutoHotkey
+    echo.
+    choice /M "Do you want to restart AutoHotkey to apply changes? (Y/N)"
+    if !ERRORLEVEL! equ 1 (
+        echo Restarting AutoHotkey...
+        
+        :: Method 1: Kill existing AutoHotkey processes more effectively
+        echo Stopping existing AutoHotkey processes...
+        taskkill /f /im "AutoHotkey32.exe" >nul 2>&1
+        taskkill /f /im "AutoHotkey64.exe" >nul 2>&1
+        taskkill /f /im "AutoHotkeyU32.exe" >nul 2>&1
+        taskkill /f /im "AutoHotkeyU64.exe" >nul 2>&1
+        taskkill /f /im "AutoHotkey.exe" >nul 2>&1
+        
+        :: Wait for processes to fully terminate
+        timeout /t 3 /nobreak >nul
+        
+        :: Start the updated script
+        echo Starting updated script...
+        start "" "%LOCAL_SCRIPT_PATH%"
+    )
 )
 
 :CleanupAndExit
