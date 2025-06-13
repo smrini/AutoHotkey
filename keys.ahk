@@ -626,3 +626,8 @@ SendMode("Input")
     }
 }
 #HotIf
+
+^!Escape:: {
+    Send "{Shift up}{Ctrl up}{Alt up}{LWin up}{RWin up}"
+    MsgBox "All modifier keys released!"
+}
