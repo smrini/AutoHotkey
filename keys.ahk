@@ -7,8 +7,9 @@ userDirectory := EnvGet("USERPROFILE") . "\"
 !c:: Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe"
 ^!t:: Run A_ComSpec " /k cd /d %USERPROFILE%"
 ^!q:: Run "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\QMK MSYS.lnk"
+^!#t:: Run A_ComSpec " /k ssh server"
 
-/*---------------------------------------------------Browser Shortcut----------------------------------------------------------*/
+/*--------------------------------------------------Programs Shortcut----------------------------------------------------------*/
 AppsKey & 1:: Run "explorer"
 AppsKey & 2:: Run "msEdge"
 AppsKey & 3:: Run userDirectory . "AppData\Local\Programs\Microsoft VS Code\Code.exe"
@@ -152,10 +153,11 @@ Toggle_HiddenFiles_Display() {
 CapsLock:: send "{Alt Down}{Tab}{Alt Up}"
 ^CapsLock:: send "#+s"
 
+!Home::Send "{End}"
+
 #HotIf WinActive("Typing Practice and 1 more page - Personal - Microsoft​ Edge")
 CapsLock:: SendInput '{Ctrl Down}{Left}{Ctrl Up}'
 #HotIf
-
 
 ^+Up:: send "{Up 5}"
 ^+Down:: send "{Down 5}"
